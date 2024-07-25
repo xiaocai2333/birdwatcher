@@ -107,9 +107,9 @@ func getSegmentLazyFunc(cli clientv3.KV, basePath string, segment datapbv2.Segme
 
 // ListSegments list segment info from etcd
 func ListSegments(cli clientv3.KV, basePath string, filter func(*datapb.SegmentInfo) bool) ([]*datapb.SegmentInfo, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
-	resp, err := cli.Get(ctx, path.Join(basePath, SegmentMetaPrefix)+"/", clientv3.WithPrefix())
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	//defer cancel()
+	resp, err := cli.Get(context.Background(), path.Join(basePath, SegmentMetaPrefix)+"/", clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
@@ -245,8 +245,9 @@ func ListLoadedSegments(cli clientv3.KV, basePath string, filter func(*querypb.S
 
 // RemoveSegment delete segment entry from etcd.
 func RemoveSegment(cli clientv3.KV, basePath string, info *datapb.SegmentInfo) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
-	defer cancel()
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	//defer cancel()
+	ctx := context.Background()
 
 	segmentPath := path.Join(basePath, "datacoord-meta/s", fmt.Sprintf("%d/%d/%d", info.CollectionID, info.PartitionID, info.ID))
 	_, err := cli.Delete(ctx, segmentPath)
