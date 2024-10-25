@@ -65,7 +65,7 @@ func ListCollectionsV2(cli clientv3.KV, basePath string, filter func(*etcdpbv2.C
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	colls, _, err := ListProtoObjectsAdv(ctx, cli, path.Join(basePath, SnapshotPrefix, DBCollectionMetaPrefix), func(_ string, value []byte) bool {
+	colls, _, err := ListProtoObjectsAdv(ctx, cli, path.Join(basePath, DBCollectionMetaPrefix), func(_ string, value []byte) bool {
 		return !bytes.Equal(value, CollectionTombstone)
 	}, filter)
 	return colls, err
