@@ -65,10 +65,21 @@ func ListCollectionsV2(cli clientv3.KV, basePath string, filter func(*etcdpbv2.C
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	colls, _, err := ListProtoObjectsAdv(ctx, cli, path.Join(basePath, DBCollectionMetaPrefix), func(_ string, value []byte) bool {
-		return !bytes.Equal(value, CollectionTombstone)
-	}, filter)
-	return colls, err
+	prefixes := []string{
+		path.Join(basePath, CollectionMetaPrefix),
+		path.Join(basePath, DBCollectionMetaPrefix),
+	}
+	result := make([]etcdpbv2.CollectionInfo, 0)
+	for _, prefix := range prefixes {
+		collections, _, err := ListProtoObjectsAdv[etcdpbv2.CollectionInfo](ctx, cli, prefix, func(_ string, value []byte) bool {
+			return !bytes.Equal(value, CollectionTombstone)
+		}, filter)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, collections...)
+	}
+	return result, nil
 }
 
 // ListCollectionsVersion returns collection information as provided version.
