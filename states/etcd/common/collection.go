@@ -61,6 +61,16 @@ func ListCollections(cli clientv3.KV, basePath string, filter func(*etcdpb.Colle
 	return colls, err
 }
 
+func ListCollectionsV2(cli clientv3.KV, basePath string, filter func(*etcdpbv2.CollectionInfo) bool) ([]etcdpbv2.CollectionInfo, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	colls, _, err := ListProtoObjectsAdv(ctx, cli, path.Join(basePath, SnapshotPrefix, DBCollectionMetaPrefix), func(_ string, value []byte) bool {
+		return !bytes.Equal(value, CollectionTombstone)
+	}, filter)
+	return colls, err
+}
+
 // ListCollectionsVersion returns collection information as provided version.
 func ListCollectionsVersion(ctx context.Context, cli clientv3.KV, basePath string, version string, filters ...func(*models.Collection) bool) ([]*models.Collection, error) {
 	prefixes := []string{
